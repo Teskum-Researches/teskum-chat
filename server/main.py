@@ -38,7 +38,13 @@ async def main():
     print(" " + "=" * 16)
     print(" Server started!")
     
-    async with websockets.serve(echo, host_to_use, port):
+    async with websockets.serve(
+        echo,
+        host_to_use,
+        port,
+        ping_interval=20,   # отправлять ping каждые 20 сек
+        ping_timeout=10     # ждать pong 10 сек
+    ) as server:
         await asyncio.Future()  # run forever
 
 if __name__ == "__main__":
