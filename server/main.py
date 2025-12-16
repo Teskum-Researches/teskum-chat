@@ -2,25 +2,37 @@ import asyncio
 import websockets
 import json
 from config import port, is_local, host, is_secure
+from db import ChatDB
 
-messages = [{"user": "System", "content": "Teskum chat 1.0"}]
+db = ChatDB()
+
+messages = db.get_messages()
 
 async def echo(websocket):
     async for raw_message in websocket:
         try:
-            # Ожидаем JSON
             data = json.loads(raw_message)
+            cmd = data.get("cmd")
 
-            if data.get("cmd") == "list":
+            if cmd == "list":
+                with ChatDB() as db:
+                    messages = db.get_messages()
                 await websocket.send(json.dumps({"messages": messages}))
-            elif data.get("cmd") == "send":
+
+            elif cmd == "send":
                 user = data.get("user")
                 content = data.get("content")
                 if user and content:
-                    messages.append({"user": user, "content": content})
-                await websocket.send(json.dumps({"messages": messages}))
+                    with ChatDB() as db:
+                        db.add_message(user=user, text=content)
+                        messages = db.get_messages()
+                    await websocket.send(json.dumps({"messages": messages}))
+                else:
+                    await websocket.send(json.dumps({"error": "Missing user or content"}))
+
             else:
                 await websocket.send(json.dumps({"error": "Unknown command"}))
+
         except json.JSONDecodeError:
             await websocket.send(json.dumps({"error": "Invalid JSON"}))
 
