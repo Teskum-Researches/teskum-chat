@@ -1,7 +1,8 @@
 import asyncio
 import websockets
 import json
-from config import ip, port, is_secure
+import ssl
+from config import ip, port, is_secure, allow_self_signed
 
 async def ainput(prompt: str = "") -> str:
     loop = asyncio.get_event_loop()
@@ -9,16 +10,24 @@ async def ainput(prompt: str = "") -> str:
 
 async def hello():
     uri = f"{'wss' if is_secure else 'ws'}://{ip}:{port}/ws"
-    async with websockets.connect(uri, ping_interval=20, ping_timeout=10) as websocket:
+    ssl_context = ssl.create_default_context()
+    if allow_self_signed:
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE  # Только для тестов!
+    if not is_secure:
+        ssl_context = None
+    async with websockets.connect(uri, ping_interval=20, ping_timeout=10, ssl=ssl_context) as websocket:
         print("Username")
         user = (await ainput("> ")).strip()
-        while True:
+        running = True
+        while running:
             command = (await ainput("command> ")).strip()
             if command == "help":
                 print("Teskum chat 1.0")
-                print("help = command list")
-                print("list = list messages")
-                print("send = sends a message")
+                print("help - command list")
+                print("list - list messages")
+                print("send - sends a message")
+                print("exit - exit")
             elif command == "list":
                 await websocket.send(json.dumps({"cmd": "list"}))
                 response = await websocket.recv()
@@ -32,6 +41,9 @@ async def hello():
                 data = json.loads(response)
                 for msg in data.get("messages", []):
                     print(f"{msg['user']}: {msg['content']}")
+            elif command == "exit":
+                print("Exiting...")
+                running = False
             else:
                 print("Unknown command. Type 'help'.")
 
