@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 port = 8765
 is_secure = False
 cert_file = "cert.crt"
