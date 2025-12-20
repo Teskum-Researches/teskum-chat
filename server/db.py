@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import sqlite3
 import os
 from config import db_name
