@@ -39,18 +39,18 @@ async def echo(websocket):
             await websocket.send(json.dumps({"error": "Invalid JSON"}))
 
 async def main():
-    print(" " + "=" * 16)
-    print(" Teskum chat server starting...")
+    #print(" " + "=" * 16)
+    print("Teskum chat: server version 1.0 is starting...")
     if is_local:
-        print("!Server running local")
+        print("Server is running local")
         host_to_use = "localhost"
     else:
         host_to_use = host
     if not is_secure:
-        print("!Server running unsecure")
-    print(" port:", port)
-    print(" " + "=" * 16)
-    print(" Server started!")
+        print("Server is running unsecure")
+    print("port:", port)
+    #print(" " + "=" * 16)
+    print("Server started!")
     
     if not is_secure:
         ssl_context = None
