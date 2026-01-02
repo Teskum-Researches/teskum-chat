@@ -22,8 +22,10 @@ async def echo(websocket):
                 await websocket.send(json.dumps({"messages": messages}))
 
             elif cmd == "send":
-                user = data.get("user")
+                session = data.get("session")
                 content = data.get("content")
+                _, user = check_session(session)
+
                 if user and content:
                     with ChatDB() as db:
                         db.add_message(user=user, text=content)

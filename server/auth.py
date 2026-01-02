@@ -34,8 +34,11 @@ def check_password(password: str, username: str) -> bool:
     else:
         return False
 
-def check_session():
-    pass
+def check_session(session:str):
+    if sessions[session]:
+        return True, sessions[session]
+    else:
+        return False, None
 
 def login(username: str, password: str):
     global sessions

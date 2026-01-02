@@ -71,7 +71,7 @@ async def hello():
                     print(f"{msg['user']}: {msg['content']}")
             elif command == "send":
                 content = (await ainput("  Content?> ")).strip()
-                await websocket.send(json.dumps({"cmd": "send", "user": user, "content": content}))
+                await websocket.send(json.dumps({"cmd": "send", "content": content, "session":session}))
                 response = await websocket.recv()
                 data = json.loads(response)
                 for msg in data.get("messages", []):
