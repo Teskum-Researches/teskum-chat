@@ -5,10 +5,10 @@ import ssl
 import json
 from config import port, is_local, host, is_secure, cert_file, cert_key
 from db import ChatDB
+from auth import login, check_session, hash_password
 
-db = ChatDB()
-
-messages = db.get_messages()
+with ChatDB() as db:
+    messages = db.get_messages()
 
 async def echo(websocket):
     async for raw_message in websocket:
@@ -31,6 +31,31 @@ async def echo(websocket):
                     await websocket.send(json.dumps({"messages": messages}))
                 else:
                     await websocket.send(json.dumps({"error": "Missing user or content"}))
+            elif cmd == "login":
+                username = data.get("username")
+                password = data.get("pass")
+                if username and password:    
+                    status, session = login(username=username, password=password)
+                    if status == 1:
+                        await websocket.send(json.dumps({"status":"OK", "session": session}))
+                    else:
+                        await websocket.send(json.dumps({"status":"ERROR", "error":f"{status}, {session}, {username}, {password}"}))
+                else:
+                    await websocket.send(json.dumps({"error": "Missing username or password"}))
+            
+            elif cmd == "register":
+                username = data.get("username")
+                password_str = data.get("pass")
+                if username and password_str:
+                    with ChatDB() as db:
+                        password_hash = hash_password(username=username, password=password_str)
+                        state = db.add_user(username=username, password=password_hash)
+                        if state:
+                            await websocket.send(json.dumps({"status": "OK"}))
+                        else:
+                            await websocket.send(json.dumps({"status":"ERROR"}))
+                else:
+                    await websocket.send(json.dumps({"error": "Missing username or password"}))
 
             else:
                 await websocket.send(json.dumps({"error": "Unknown command"}))

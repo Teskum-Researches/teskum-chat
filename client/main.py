@@ -18,8 +18,42 @@ async def hello():
     if not is_secure:
         ssl_context = None
     async with websockets.connect(uri, ping_interval=20, ping_timeout=10, ssl=ssl_context) as websocket:
+        print("Register/login[r,l]")
+        operation = (await ainput("> ")).strip()
         print("Username")
         user = (await ainput("> ")).strip()
+        print("Password")
+        password = (await ainput("> ")).strip()
+        
+        if operation == "r":
+            await websocket.send(json.dumps({"cmd": "register","username":user, "pass":password}))
+            result_json = await websocket.recv()
+            result = json.loads(result_json)
+            if result["status"] == "ERROR":
+                print("Error!")
+                print(result_json)
+                quit()
+            else:
+                print("OK")
+                await websocket.send(json.dumps({"cmd": "login", "username":user, "pass":password}))
+                result_json = await websocket.recv()
+                result = json.loads(result_json)
+                if result["status"] == "OK":
+                    session = result["session"]
+                else:
+                    print("Error!")
+                    print(result_json)
+                    quit()
+        elif operation == "l":
+            await websocket.send(json.dumps({"cmd": "login", "username":user, "pass":password}))
+            result_json = await websocket.recv()
+            result = json.loads(result_json)
+            if result["status"] == "OK":
+                session = result["session"]
+            else:
+                print("Error!")
+                print(result_json)
+                quit()
         running = True
         while running:
             command = (await ainput("command> ")).strip()
