@@ -5,6 +5,7 @@ import json
 import ssl
 from config import ip, port, is_secure, allow_self_signed
 
+
 async def ainput(prompt: str = "") -> str:
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, input, prompt)
@@ -14,7 +15,7 @@ async def hello():
     ssl_context = ssl.create_default_context()
     if allow_self_signed:
         ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE  # Только для тестов!
+        ssl_context.verify_mode = ssl.CERT_NONE  
     if not is_secure:
         ssl_context = None
     async with websockets.connect(uri, ping_interval=20, ping_timeout=10, ssl=ssl_context) as websocket:

@@ -30,9 +30,9 @@ async def echo(websocket):
                     with ChatDB() as db:
                         db.add_message(user=user, text=content)
                         messages = db.get_messages()
-                    await websocket.send(json.dumps({"messages": messages}))
+                    await websocket.send(json.dumps({"messages": messages, "status":"OK"}))
                 else:
-                    await websocket.send(json.dumps({"error": "Missing user or content"}))
+                    await websocket.send(json.dumps({"error": "Missing user or content", "status":"ERROR"}))
             elif cmd == "login":
                 username = data.get("username")
                 password = data.get("pass")
@@ -43,7 +43,7 @@ async def echo(websocket):
                     else:
                         await websocket.send(json.dumps({"status":"ERROR", "error":f"{status}, {session}, {username}, {password}"}))
                 else:
-                    await websocket.send(json.dumps({"error": "Missing username or password"}))
+                    await websocket.send(json.dumps({"error": "Missing username or password", "status":"ERROR"}))
             
             elif cmd == "register":
                 username = data.get("username")
@@ -57,13 +57,13 @@ async def echo(websocket):
                         else:
                             await websocket.send(json.dumps({"status":"ERROR"}))
                 else:
-                    await websocket.send(json.dumps({"error": "Missing username or password"}))
+                    await websocket.send(json.dumps({"error": "Missing username or password", "status":"ERROR"}))
 
             else:
-                await websocket.send(json.dumps({"error": "Unknown command"}))
+                await websocket.send(json.dumps({"error": "Unknown command", "status":"ERROR"}))
 
         except json.JSONDecodeError:
-            await websocket.send(json.dumps({"error": "Invalid JSON"}))
+            await websocket.send(json.dumps({"error": "Invalid JSON", "status":"ERROR"}))
 
 async def main():
     #print(" " + "=" * 16)
